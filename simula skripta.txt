@@ -1,0 +1,232 @@
+create table transMaster (
+id number(32) PRIMARY key,
+oznaka varchar2(32),
+datum date,
+brojpumpi number(2));
+/
+create table transakcija (
+id number(32) PRIMARY key,
+id_mastera number(32),
+id_pumpe number(32),
+vrijeme date,
+akcija number(1));
+/
+create table pumpa (
+id number(32) primary key,
+naziv varchar2(32));
+/
+create table redpumpe(
+id number(32) primary key,
+id_pumpe number(32),
+queue_size number(32),
+id_master number(32));
+/
+alter table transakcija add constraint transakcija_master_fk 
+foreign key(id_mastera) REFERENCES transMaster(id);
+/
+alter table transakcija add constraint transakcija_akcija_ck
+check (akcija in (0,1,2));
+/
+alter table redpumpe add constraint redpumpe_queue_size_ck
+check (queue_size >= 0);
+/
+alter table redpumpe add constraint redpumpe_transmaster_fk
+foreign key (id_master) references transmaster(id);
+/
+
+CREATE SEQUENCE  "SEQ"  
+MINVALUE 0 
+MAXVALUE 9999999999999 
+INCREMENT BY 1 
+START WITH 1
+CACHE 20 
+NOORDER  
+NOCYCLE;
+/
+
+create or replace package pompack
+is
+function sekvencaSF (
+id_p number
+)RETURN number;
+
+PROCEDURE redpumpeSP (
+pumpa_p in number,
+id_master_p in number,
+current_queue_p out number
+);
+end pompack;
+/
+create or replace package body pompack
+is
+function sekvencaSF (id_p number)
+return number
+is
+id_l number;
+begin
+if id_p is not null then 
+  id_l := id_p;
+else
+  select seq.nextval into id_l from dual;
+end if;
+return id_l;
+end;
+
+PROCEDURE redpumpeSP (
+pumpa_p in number, 
+id_master_p in number, 
+current_queue_p out number) 
+is
+  current_queue_l number;
+  cursor c_red
+  is
+    select queue_size from REDPUMPE
+      where ID_PUMPE = pumpa_p  and ID_MASTER = id_master_p;
+begin
+  /*select nvl(queue_size,0) into current_queue_l from REDPUMPE 
+    where ID_PUMPE = pumpa_p and ID_MASTER = id_master_p;*/
+  open c_red;
+  fetch c_red into current_queue_l;
+  
+  if c_red%found then
+    current_queue_p := current_queue_l;
+  else 
+    current_queue_p := 0;
+  end if;
+  close c_red;
+  exception
+  when others then
+    close c_red;
+    raise;
+end;
+end;
+/
+
+create or replace PACKAGE mainpack
+is
+PROCEDURE insertDolazakSP (
+  id_master_p in number,
+  id_pumpe_p in number,
+  current_queue_p out number);
+
+PROCEDURE insertOdlazakSP (
+  id_master_p in number,
+  id_pumpe_p in number,
+  current_queue_p out number);
+  
+procedure insertKrajPunjenjaSP (
+  id_master_p in number,
+  id_pumpe_p in number);
+end mainpack;
+/
+
+create or replace package body mainpack
+is
+procedure insertDolazakSP
+(id_master_p in number,
+id_pumpe_p in number,
+current_queue_p out number)
+IS
+vrijeme_l date;
+current_queue_l number;
+cursor c_red
+  is
+    select queue_size from REDPUMPE
+      where ID_PUMPE = id_pumpe_p and ID_MASTER = id_master_p for update;
+begin
+  vrijeme_l := sysdate;
+  insert into transakcija (id_mastera, id_pumpe, vrijeme, akcija)
+    values (id_master_p, id_pumpe_p, vrijeme_l, 0);
+  open c_red;
+  fetch c_red into current_queue_l;
+  
+  if c_red%found then
+    current_queue_p := current_queue_l+1;
+    update redpumpe set queue_size = current_queue_p where current of c_red;
+  else 
+    current_queue_p := 1;
+    insert into redpumpe (id_pumpe, queue_size, ID_MASTER)
+      values (id_pumpe_p, current_queue_p, id_master_p);
+  end if;
+  commit;
+  close c_red;
+  exception
+  when others then
+    close c_red;
+    raise;
+end;
+
+PROCEDURE insertOdlazakSP (
+  id_master_p in number,
+  id_pumpe_p in number,
+  current_queue_p out number)
+is 
+vrijeme_l date;
+current_queue_l number;
+cursor c_red
+  is
+    select queue_size from REDPUMPE
+      where ID_PUMPE = id_pumpe_p  and ID_MASTER = id_master_p for update;
+begin
+  vrijeme_l := sysdate;
+  insert into transakcija (id_mastera, id_pumpe, vrijeme, akcija)
+    values (id_master_p, id_pumpe_p, vrijeme_l, 2);
+  open c_red;
+  fetch c_red into current_queue_l;
+  current_queue_p := current_queue_l-1;
+  if c_red%found then
+    update redpumpe set queue_size = current_queue_p where current of c_red;
+  end if;
+  commit;
+  close c_red;
+  exception
+  when others then
+    close c_red;
+    raise;
+end;
+
+procedure insertKrajPunjenjaSP (
+  id_master_p in number,
+  id_pumpe_p in number)
+  is
+  vrijeme_l date;
+  begin
+  vrijeme_l := sysdate;
+  insert into transakcija (id_mastera, id_pumpe, vrijeme, akcija) 
+    values (id_master_p, id_pumpe_p, vrijeme_l, 1);
+  commit;
+  end;
+end mainpack;
+/
+
+CREATE OR REPLACE TRIGGER pumpa_bir before
+  INSERT ON pumpa 
+  FOR EACH ROW 
+  BEGIN 
+    :new.id := POMPACK.SEKVENCASF(:new.id);
+  END;
+/
+CREATE OR REPLACE TRIGGER redpumpe before
+  INSERT ON redpumpe 
+  FOR EACH ROW 
+  BEGIN 
+    :new.id := POMPACK.SEKVENCASF(:new.id);
+  END;
+  /
+  CREATE OR REPLACE TRIGGER transakcija_bir before
+  INSERT ON transakcija
+  FOR EACH ROW 
+  BEGIN 
+    :new.id := POMPACK.SEKVENCASF(:new.id);
+  END;
+  /
+  create or replace TRIGGER transmaster_bir before
+  INSERT ON transmaster
+  FOR EACH ROW 
+  BEGIN 
+    :new.id := POMPACK.SEKVENCASF(:new.id);
+    if :new.datum is null then
+      :new.datum := sysdate;
+    end if;
+  END;
+/
