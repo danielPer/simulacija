@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="windows-1250" ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+<!---->
+<ViewObject
+  xmlns="http://xmlns.oracle.com/bc4j"
+  Name="TransakcijaVO"
+  Version="12.1.2.66.68"
+  InheritPersonalization="merge"
+  SelectList="TransakcijaEO.ID, 
+       TransakcijaEO.ID_MASTERA, 
+       TransakcijaEO.ID_PUMPE, 
+       TransakcijaEO.VRIJEME, 
+       TransakcijaEO.AKCIJA"
+  FromList="TRANSAKCIJA TransakcijaEO"
+  BindingStyle="OracleName"
+  CustomQuery="false"
+  PageIterMode="Full">
+  <EntityUsage
+    Name="TransakcijaEO"
+    Entity="model.eo.TransakcijaEO"/>
+  <ViewAttribute
+    Name="Id"
+    IsNotNull="true"
+    PrecisionRule="true"
+    EntityAttrName="Id"
+    EntityUsage="TransakcijaEO"
+    AliasName="ID"/>
+  <ViewAttribute
+    Name="IdMastera"
+    PrecisionRule="true"
+    EntityAttrName="IdMastera"
+    EntityUsage="TransakcijaEO"
+    AliasName="ID_MASTERA"/>
+  <ViewAttribute
+    Name="IdPumpe"
+    PrecisionRule="true"
+    EntityAttrName="IdPumpe"
+    EntityUsage="TransakcijaEO"
+    AliasName="ID_PUMPE"/>
+  <ViewAttribute
+    Name="Vrijeme"
+    PrecisionRule="true"
+    EntityAttrName="Vrijeme"
+    EntityUsage="TransakcijaEO"
+    AliasName="VRIJEME"/>
+  <ViewAttribute
+    Name="Akcija"
+    PrecisionRule="true"
+    EntityAttrName="Akcija"
+    EntityUsage="TransakcijaEO"
+    AliasName="AKCIJA"/>
+</ViewObject>

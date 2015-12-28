@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel" version="12.1.2.66.68" id="unosPageDef" Package="pages">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables"/>
+    <iterator Binds="Transmaster1" RangeSize="25" DataControl="AppModuleDataControl" id="Transmaster1Iterator"
+              ChangeEventPolicy="ppr"/>
+  </executables>
+  <bindings>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Oznaka">
+      <AttrNames>
+        <Item Value="Oznaka"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Brojpumpi">
+      <AttrNames>
+        <Item Value="Brojpumpi"/>
+      </AttrNames>
+    </attributeValues>
+    <action IterBinding="Transmaster1Iterator" id="First" RequiresUpdateModel="true" Action="first"/>
+    <action IterBinding="Transmaster1Iterator" id="Previous" RequiresUpdateModel="true" Action="previous"/>
+    <action IterBinding="Transmaster1Iterator" id="Next" RequiresUpdateModel="true" Action="next"/>
+    <action IterBinding="Transmaster1Iterator" id="Last" RequiresUpdateModel="true" Action="last"/>
+    <methodAction id="currentQueue" RequiresUpdateModel="true" Action="invokeMethod" MethodName="currentQueue"
+                  IsViewObjectMethod="false" DataControl="AppModuleDataControl"
+                  InstanceName="data.AppModuleDataControl.dataProvider"
+                  ReturnName="data.AppModuleDataControl.methodResults.currentQueue_AppModuleDataControl_dataProvider_currentQueue_result">
+      <NamedData NDName="masterId" NDValue="" NDType="java.lang.Integer"/>
+      <NamedData NDName="pumpaId" NDValue="" NDType="java.lang.Integer"/>
+    </methodAction>
+    <methodAction id="insertDolazak" RequiresUpdateModel="true" Action="invokeMethod" MethodName="insertDolazak"
+                  IsViewObjectMethod="false" DataControl="AppModuleDataControl"
+                  InstanceName="data.AppModuleDataControl.dataProvider"
+                  ReturnName="data.AppModuleDataControl.methodResults.insertDolazak_AppModuleDataControl_dataProvider_insertDolazak_result">
+      <NamedData NDName="masterId" NDType="java.lang.Integer"/>
+      <NamedData NDName="pumpaId" NDType="java.lang.Integer"/>
+    </methodAction>
+    <methodAction id="insertKrajPunjenja" RequiresUpdateModel="true" Action="invokeMethod"
+                  MethodName="insertKrajPunjenja" IsViewObjectMethod="false" DataControl="AppModuleDataControl"
+                  InstanceName="data.AppModuleDataControl.dataProvider"
+                  ReturnName="data.AppModuleDataControl.methodResults.insertKrajPunjenja_AppModuleDataControl_dataProvider_insertKrajPunjenja_result">
+      <NamedData NDName="masterId" NDType="java.lang.Integer"/>
+      <NamedData NDName="pumpaId" NDType="java.lang.Integer"/>
+    </methodAction>
+    <methodAction id="insertOdlazak" RequiresUpdateModel="true" Action="invokeMethod" MethodName="insertOdlazak"
+                  IsViewObjectMethod="false" DataControl="AppModuleDataControl"
+                  InstanceName="data.AppModuleDataControl.dataProvider"
+                  ReturnName="data.AppModuleDataControl.methodResults.insertOdlazak_AppModuleDataControl_dataProvider_insertOdlazak_result">
+      <NamedData NDName="masterId" NDType="java.lang.Integer"/>
+      <NamedData NDName="pumpaId" NDType="java.lang.Integer"/>
+    </methodAction>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Id">
+      <AttrNames>
+        <Item Value="Id"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

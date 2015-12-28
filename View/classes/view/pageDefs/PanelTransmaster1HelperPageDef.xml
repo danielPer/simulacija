@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel" version="12.1.2.66.68" id="PanelTransmaster1HelperPageDef"
+                Package="view.pageDefs">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables"/>
+    <iterator Binds="Transmaster1" RangeSize="25" DataControl="AppModuleDataControl" id="Transmaster1Iterator"/>
+  </executables>
+  <bindings>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Brojpumpi" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Brojpumpi"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Oznaka" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Oznaka"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Brojpumpi1" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Brojpumpi"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Oznaka1" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Oznaka"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction id="proba" RequiresUpdateModel="true" Action="invokeMethod" MethodName="proba"
+                  IsViewObjectMethod="false" DataControl="AppModuleDataControl"
+                  InstanceName="data.AppModuleDataControl.dataProvider"
+                  ReturnName="data.AppModuleDataControl.methodResults.proba_AppModuleDataControl_dataProvider_proba_result">
+      <NamedData NDName="masterId" NDValue="24" NDType="java.lang.Integer"/>
+      <NamedData NDName="pumpaId" NDValue="25" NDType="java.lang.Integer"/>
+    </methodAction>
+    <methodAction id="proba1" RequiresUpdateModel="true" Action="invokeMethod" MethodName="proba"
+                  IsViewObjectMethod="false" DataControl="AppModuleDataControl"
+                  InstanceName="data.AppModuleDataControl.dataProvider"
+                  ReturnName="data.AppModuleDataControl.methodResults.proba_AppModuleDataControl_dataProvider_proba_result">
+      <NamedData NDName="masterId" NDType="java.lang.Integer"/>
+      <NamedData NDName="pumpaId" NDType="java.lang.Integer"/>
+    </methodAction>
+  </bindings>
+</pageDefinition>

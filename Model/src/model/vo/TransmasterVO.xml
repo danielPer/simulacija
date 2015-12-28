@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="windows-1250" ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+<!---->
+<ViewObject
+  xmlns="http://xmlns.oracle.com/bc4j"
+  Name="TransmasterVO"
+  Version="12.1.2.66.68"
+  InheritPersonalization="merge"
+  SelectList="TransmasterEO.ID, 
+       TransmasterEO.OZNAKA, 
+       TransmasterEO.DATUM, 
+       TransmasterEO.BROJPUMPI"
+  FromList="TRANSMASTER TransmasterEO"
+  BindingStyle="OracleName"
+  CustomQuery="false"
+  PageIterMode="Full">
+  <EntityUsage
+    Name="TransmasterEO"
+    Entity="model.eo.TransmasterEO"/>
+  <ViewAttribute
+    Name="Id"
+    IsNotNull="true"
+    PrecisionRule="true"
+    EntityAttrName="Id"
+    EntityUsage="TransmasterEO"
+    AliasName="ID"/>
+  <ViewAttribute
+    Name="Oznaka"
+    PrecisionRule="true"
+    EntityAttrName="Oznaka"
+    EntityUsage="TransmasterEO"
+    AliasName="OZNAKA"/>
+  <ViewAttribute
+    Name="Datum"
+    PrecisionRule="true"
+    EntityAttrName="Datum"
+    EntityUsage="TransmasterEO"
+    AliasName="DATUM"/>
+  <ViewAttribute
+    Name="Brojpumpi"
+    PrecisionRule="true"
+    EntityAttrName="Brojpumpi"
+    EntityUsage="TransmasterEO"
+    AliasName="BROJPUMPI"/>
+  <ViewLinkAccessor
+    Name="Transakcija"
+    ViewLink="model.vo.link.TransakcijaMasterFkLink"
+    Type="oracle.jbo.RowIterator"
+    IsUpdateable="false"/>
+</ViewObject>

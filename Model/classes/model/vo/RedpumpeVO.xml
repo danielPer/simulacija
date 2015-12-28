@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="windows-1250" ?>
+<!DOCTYPE ViewObject SYSTEM "jbo_03_01.dtd">
+<!---->
+<ViewObject
+  xmlns="http://xmlns.oracle.com/bc4j"
+  Name="RedpumpeVO"
+  Version="12.1.2.66.68"
+  InheritPersonalization="merge"
+  SelectList="RedpumpeEO.ID, 
+       RedpumpeEO.ID_PUMPE, 
+       RedpumpeEO.QUEUE_SIZE"
+  FromList="REDPUMPE RedpumpeEO"
+  BindingStyle="OracleName"
+  CustomQuery="false"
+  PageIterMode="Full">
+  <EntityUsage
+    Name="RedpumpeEO"
+    Entity="model.eo.RedpumpeEO"/>
+  <ViewAttribute
+    Name="Id"
+    IsNotNull="true"
+    PrecisionRule="true"
+    EntityAttrName="Id"
+    EntityUsage="RedpumpeEO"
+    AliasName="ID"/>
+  <ViewAttribute
+    Name="IdPumpe"
+    PrecisionRule="true"
+    EntityAttrName="IdPumpe"
+    EntityUsage="RedpumpeEO"
+    AliasName="ID_PUMPE"/>
+  <ViewAttribute
+    Name="QueueSize"
+    PrecisionRule="true"
+    EntityAttrName="QueueSize"
+    EntityUsage="RedpumpeEO"
+    AliasName="QUEUE_SIZE"/>
+</ViewObject>

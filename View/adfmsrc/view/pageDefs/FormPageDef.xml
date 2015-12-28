@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel" version="12.1.2.66.68" id="FormPageDef"
+                Package="view.pageDefs">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables"/>
+    <page id="view_PanelTransmaster1HelperPageDef" path="view.pageDefs.PanelTransmaster1HelperPageDef"/>
+    <page id="view_PanelTransmaster1HelperPageDef1" path="view.pageDefs.PanelTransmaster1HelperPageDef"/>
+    <iterator id="Transmaster1Iterator" Binds="Transmaster1" DataControl="AppModuleDataControl" RangeSize="25"/>
+  </executables>
+  <bindings>
+    <methodAction id="proba" RequiresUpdateModel="true" Action="invokeMethod" MethodName="proba"
+                  IsViewObjectMethod="false" DataControl="AppModuleDataControl"
+                  InstanceName="data.AppModuleDataControl.dataProvider"
+                  ReturnName="data.AppModuleDataControl.methodResults.proba_AppModuleDataControl_dataProvider_proba_result">
+      <NamedData NDName="masterId" NDValue="24" NDType="java.lang.Integer"/>
+      <NamedData NDName="pumpaId" NDValue="25" NDType="java.lang.Integer"/>
+    </methodAction>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Brojpumpi">
+      <AttrNames>
+        <Item Value="Brojpumpi"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Brojpumpi1" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Brojpumpi"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

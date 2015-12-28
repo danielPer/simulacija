@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel" version="12.1.2.66.68"
+                id="PanelTransmaster1Helper1PageDef" Package="view.pageDefs">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables"/>
+    <iterator Binds="Transmaster1" RangeSize="25" DataControl="AppModuleDataControl" id="Transmaster1Iterator"/>
+  </executables>
+  <bindings>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Oznaka" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Oznaka"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues IterBinding="Transmaster1Iterator" id="Brojpumpi" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Brojpumpi"/>
+      </AttrNames>
+    </attributeValues>
+  </bindings>
+</pageDefinition>

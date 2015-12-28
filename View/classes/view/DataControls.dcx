@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<DataControlConfigs xmlns="http://xmlns.oracle.com/adfm/configuration" version="12.1.2.66.68" id="DataControls"
+                    Package="view">
+  <AdapterDataControl id="pumpaPanel" FactoryClass="oracle.adf.model.adapter.bean.BeanDCFactoryImpl"
+                      ImplDef="oracle.adf.model.adapter.bean.BeanDCDefinition" SupportsTransactions="false"
+                      SupportsSortCollection="true" SupportsResetState="false" SupportsRangesize="false"
+                      SupportsFindMode="false" SupportsUpdates="true" Definition="view.pomocne.pumpaPanel"
+                      BeanClass="view.pomocne.pumpaPanel" xmlns="http://xmlns.oracle.com/adfm/datacontrol">
+    <Source>
+      <bean-definition BeanClass="view.pomocne.pumpaPanel"
+                       DataControlHandler="oracle.adf.model.adapter.bean.DataFilterHandler" AccessMode="scrollable"
+                       EagerPersist="false" xmlns="http://xmlns.oracle.com/adfm/adapter/bean"/>
+    </Source>
+  </AdapterDataControl>
+  <AdapterDataControl id="pumpaPanel1" FactoryClass="oracle.adf.model.adapter.bean.BeanDCFactoryImpl"
+                      ImplDef="oracle.adf.model.adapter.bean.BeanDCDefinition" SupportsTransactions="false"
+                      SupportsSortCollection="true" SupportsResetState="false" SupportsRangesize="false"
+                      SupportsFindMode="false" SupportsUpdates="true" Definition="view.pomocne.pumpaPanel"
+                      BeanClass="view.pomocne.pumpaPanel" xmlns="http://xmlns.oracle.com/adfm/datacontrol">
+    <Source>
+      <bean-definition BeanClass="view.pomocne.pumpaPanel"
+                       DataControlHandler="oracle.adf.model.adapter.bean.DataFilterHandler" AccessMode="scrollable"
+                       EagerPersist="false" xmlns="http://xmlns.oracle.com/adfm/adapter/bean"/>
+    </Source>
+  </AdapterDataControl>
+</DataControlConfigs>

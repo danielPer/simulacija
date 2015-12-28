@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<pageDefinition xmlns="http://xmlns.oracle.com/adfm/uimodel" version="12.1.2.66.68" id="PanelPumpa2PageDef"
+                Package="view.pageDefs">
+  <parameters/>
+  <executables>
+    <variableIterator id="variables"/>
+    <iterator RangeSize="1" Binds="Pumpa1" DataControl="AppModuleDataControl" id="Pumpa1Iter"/>
+  </executables>
+  <bindings>
+    <attributeValues id="Id" IterBinding="Pumpa1Iter" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Id"/>
+      </AttrNames>
+    </attributeValues>
+    <attributeValues id="Naziv" IterBinding="Pumpa1Iter" xmlns="http://xmlns.oracle.com/adfm/jcuimodel">
+      <AttrNames xmlns="http://xmlns.oracle.com/adfm/uimodel">
+        <Item Value="Naziv"/>
+      </AttrNames>
+    </attributeValues>
+    <methodAction id="proba" RequiresUpdateModel="true" Action="invokeMethod" MethodName="proba"
+                  IsViewObjectMethod="false" DataControl="AppModuleDataControl"
+                  InstanceName="data.AppModuleDataControl.dataProvider"
+                  ReturnName="data.AppModuleDataControl.methodResults.proba_AppModuleDataControl_dataProvider_proba_result">
+      <NamedData NDName="masterId" NDValue="24" NDType="java.lang.Integer"/>
+      <NamedData NDName="pumpaId" NDValue="25" NDType="java.lang.Integer"/>
+    </methodAction>
+  </bindings>
+</pageDefinition>

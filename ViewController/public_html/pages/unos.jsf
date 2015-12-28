@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE html>
+<f:view xmlns:f="http://java.sun.com/jsf/core" xmlns:af="http://xmlns.oracle.com/adf/faces/rich">
+    <af:document title="unos.jsf" id="d1">
+        <af:messages id="m1"/>
+        <af:form id="f1">
+            <af:panelStretchLayout id="psl1" topHeight="200px">
+                <f:facet name="bottom"/>
+                <f:facet name="center">
+                    <af:panelGridLayout id="pgl2" partialTriggers="b1 b2 b3 b4">
+                        <af:gridRow marginTop="5px" height="auto" marginBottom="5px" id="gr1">
+                            <af:forEach items="#{viewScope.bean.lista}" var="var" varStatus="vs">
+                                <af:gridCell marginStart="5px" width="100%" marginEnd="5px" id="gc1">
+                                    <af:panelGroupLayout id="pgl3" layout="vertical">
+                                        <af:outputText value="#{var.naziv}"
+                                                       id="ot1#{vs.index}"/>
+                                        <af:button text="Dolazak" id="b5#{vs.index}"
+                                                   actionListener="#{viewScope.bean.insertDolazak}"
+                                                   partialSubmit="false">
+                                            <af:clientAttribute name="pumpa" value="#{var.pumpaId}"/>
+                                        </af:button>
+                                        <af:button text="Kraj punjenja" id="b6#{vs.index}"
+                                                   actionListener="#{viewScope.bean.insertKraj}"
+                                                   partialSubmit="false">
+                                            <af:clientAttribute name="pumpa" value="#{var.pumpaId}"/>
+                                        </af:button>
+                                        <af:button text="Odlazak" id="b7#{vs.index}"
+                                                   actionListener="#{viewScope.bean.insertOdlazak}"
+                                                   partialSubmit="false">
+                                            <af:clientAttribute name="pumpa" value="#{var.pumpaId}"/>
+                                        </af:button>
+                                        <af:outputText value="#{var.velicinaReda}" id="of1"
+                                                       inlineStyle="font-size:large;"/>
+                                    </af:panelGroupLayout>
+                                </af:gridCell>
+                            </af:forEach>
+                        </af:gridRow>
+                    </af:panelGridLayout>
+                </f:facet>
+                <f:facet name="start">
+                    <af:button actionListener="#{bindings.currentQueue.execute}" text="currentQueue"
+                               disabled="#{!bindings.currentQueue.enabled}" id="b5"/>
+                </f:facet>
+                <f:facet name="end"/>
+                <f:facet name="top">
+                    <af:panelFormLayout id="pfl1">
+                        <af:inputText value="#{bindings.Oznaka.inputValue}" label="#{bindings.Oznaka.hints.label}"
+                                      required="#{bindings.Oznaka.hints.mandatory}"
+                                      columns="#{bindings.Oznaka.hints.displayWidth}"
+                                      maximumLength="#{bindings.Oznaka.hints.precision}"
+                                      shortDesc="#{bindings.Oznaka.hints.tooltip}" id="it1" readOnly="true">
+                            <f:validator binding="#{bindings.Oznaka.validator}"/>
+                        </af:inputText>
+                        <af:inputText value="#{bindings.Brojpumpi.inputValue}" label="#{bindings.Brojpumpi.hints.label}"
+                                      required="#{bindings.Brojpumpi.hints.mandatory}"
+                                      columns="#{bindings.Brojpumpi.hints.displayWidth}"
+                                      maximumLength="#{bindings.Brojpumpi.hints.precision}"
+                                      shortDesc="#{bindings.Brojpumpi.hints.tooltip}" id="it2" readOnly="true">
+                            <f:validator binding="#{bindings.Brojpumpi.validator}"/>
+                            <af:convertNumber groupingUsed="false" pattern="#{bindings.Brojpumpi.format}"/>
+                        </af:inputText>
+                        <f:facet name="footer">
+                            <af:panelGroupLayout layout="horizontal" id="pgl1">
+                                <af:button actionListener="#{bindings.First.execute}" text="First"
+                                           disabled="#{!bindings.First.enabled}" partialSubmit="true" id="b1"/>
+                                <af:button actionListener="#{bindings.Previous.execute}" text="Previous"
+                                           disabled="#{!bindings.Previous.enabled}" partialSubmit="true" id="b2"/>
+                                <af:button actionListener="#{bindings.Next.execute}" text="Next"
+                                           disabled="#{!bindings.Next.enabled}" partialSubmit="true" id="b3"/>
+                                <af:button text="Last"
+                                           disabled="#{!bindings.Last.enabled}" partialSubmit="true" id="b4"
+                                           action="#{viewScope.bean.b4_action}"/>
+                            </af:panelGroupLayout>
+                        </f:facet>
+                    </af:panelFormLayout>
+                </f:facet>
+            </af:panelStretchLayout>
+        </af:form>
+    </af:document>
+</f:view>

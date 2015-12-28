@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application xmlns="http://xmlns.oracle.com/adfm/application" version="12.1.2.66.68" id="DataBindings"
+             SeparateXMLFiles="false" Package="view" ClientType="JClient">
+  <pageMap>
+    <page path="view.Form" usageId="view_FormPageDef"/>
+    <page path="view.PanelTransmaster1Helper" usageId="view_PanelTransmaster1HelperPageDef"/>
+    <page path="view.PanelTransmaster1Helper1" usageId="view_PanelTransmaster1Helper1PageDef"/>
+    <page path="view.pomocne.Form" usageId="view_FormPageDef1"/>
+    <page path="view.PanelPumpa1" usageId="view_PanelPumpa1PageDef"/>
+    <page path="view.PanelPumpa2" usageId="view_PanelPumpa2PageDef"/>
+  </pageMap>
+  <pageDefinitionUsages>
+    <page id="view_FormPageDef" path="view.pageDefs.FormPageDef"/>
+    <page id="view_PanelTransmaster1HelperPageDef" path="view.pageDefs.PanelTransmaster1HelperPageDef"/>
+    <page id="view_PanelTransmaster1Helper1PageDef" path="view.pageDefs.PanelTransmaster1Helper1PageDef"/>
+    <page id="view_FormPageDef1" path="view.pageDefs.FormPageDef1"/>
+    <page id="view_PanelPumpa1PageDef" path="view.pageDefs.PanelPumpa1PageDef"/>
+    <page id="view_PanelPumpa2PageDef" path="view.pageDefs.PanelPumpa2PageDef"/>
+  </pageDefinitionUsages>
+  <dataControlUsages>
+    <BC4JDataControl id="AppModuleDataControl" Package="model.am"
+                     FactoryClass="oracle.adf.model.bc4j.DataControlFactoryImpl" SupportsTransactions="true"
+                     SupportsFindMode="true" SupportsRangesize="true" SupportsResetState="true"
+                     SupportsSortCollection="true" Configuration="AppModuleLocal" syncMode="Immediate"
+                     ExceptionMode="Immediate" xmlns="http://xmlns.oracle.com/adfm/datacontrol"/>
+  </dataControlUsages>
+</Application>
