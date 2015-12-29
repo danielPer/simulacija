@@ -7,9 +7,17 @@ brojpumpi number(2));
 create table transakcija (
 id number(32) PRIMARY key,
 id_mastera number(32),
-id_pumpe number(32),
+ID_PUMPE NUMBER(32),
+vozilo number(32),
 vrijeme date,
 akcija number(1));
+/
+CREATE TABLE vozilobrojac (
+  ID NUMBER(32) PRIMARY KEY,
+  ID_MASTERA NUMBER(32),
+  ID_PUMPE NUMBER(32),
+  broj number(32)
+);
 /
 create table pumpa (
 id number(32) primary key,
@@ -24,6 +32,9 @@ id_master number(32));
 alter table transakcija add constraint transakcija_master_fk 
 foreign key(id_mastera) REFERENCES transMaster(id);
 /
+ALTER TABLE VOZILOBROJAC ADD CONSTRAINT VOZILOBROJAC_TRANSMASTER_FK
+FOREIGN KEY (id_mastera) REFERENCES transmaster(ID);
+/
 alter table transakcija add constraint transakcija_akcija_ck
 check (akcija in (0,1,2));
 /
@@ -31,19 +42,11 @@ alter table redpumpe add constraint redpumpe_queue_size_ck
 check (queue_size >= 0);
 /
 alter table redpumpe add constraint redpumpe_transmaster_fk
-foreign key (id_master) references transmaster(id);
+FOREIGN KEY (ID_MASTER) REFERENCES TRANSMASTER(ID);
 /
-
-CREATE SEQUENCE  "SEQ"  
-MINVALUE 0 
-MAXVALUE 9999999999999 
-INCREMENT BY 1 
-START WITH 1
-CACHE 20 
-NOORDER  
-NOCYCLE;
+ALTER TABLE TRANSAKCIJA ADD CONSTRAINT TRANSAKCIJA_VOZILO_NULL_CK
+check (vozilo is not null);
 /
-
 create or replace package pompack
 is
 function sekvencaSF (
@@ -101,25 +104,24 @@ begin
 end;
 end;
 /
-
-create or replace PACKAGE mainpack
+create or replace package pompack
 is
-PROCEDURE insertDolazakSP (
-  id_master_p in number,
-  id_pumpe_p in number,
-  current_queue_p out number);
+function sekvencaSF (
+id_p number
+)RETURN NUMBER;
 
-PROCEDURE insertOdlazakSP (
-  id_master_p in number,
-  id_pumpe_p in number,
-  current_queue_p out number);
-  
-procedure insertKrajPunjenjaSP (
-  id_master_p in number,
-  id_pumpe_p in number);
-end mainpack;
+FUNCTION VOZILOBROJAC (
+ID_MASTER_P NUMBER,
+ID_PUMPA_P NUMBER
+) return number;
+
+PROCEDURE redpumpeSP (
+pumpa_p in number,
+id_master_p in number,
+current_queue_p out number
+);
+end pompack;
 /
-
 create or replace package body mainpack
 is
 procedure insertDolazakSP
@@ -127,16 +129,33 @@ procedure insertDolazakSP
 id_pumpe_p in number,
 current_queue_p out number)
 IS
-vrijeme_l date;
-current_queue_l number;
+VRIJEME_L DATE;
+VOZILO_L NUMBER;
+v_count_l number;
+CURRENT_QUEUE_L NUMBER;
 cursor c_red
   is
-    select queue_size from REDPUMPE
+    SELECT QUEUE_SIZE FROM REDPUMPE
       where ID_PUMPE = id_pumpe_p and ID_MASTER = id_master_p for update;
 begin
-  vrijeme_l := sysdate;
-  insert into transakcija (id_mastera, id_pumpe, vrijeme, akcija)
-    values (id_master_p, id_pumpe_p, vrijeme_l, 0);
+  VRIJEME_L := SYSDATE;
+  
+  SELECT COUNT(*) INTO V_COUNT_L FROM 
+    vozilobrojac WHERE ID_MASTERA = ID_MASTER_P AND ID_PUMPE = ID_PUMPE_P;
+    
+  IF V_COUNT_L > 0 THEN
+    SELECT broj INTO VOZILO_L
+      FROM VOZILOBROJAC WHERE ID_MASTERA = ID_MASTER_P AND ID_PUMPE = ID_PUMPE_P;
+    VOZILO_L := VOZILO_L+1;
+    update VOZILOBROJAC set broj = vozilo_l where ID_MASTERA = ID_MASTER_P AND ID_PUMPE = ID_PUMPE_P;
+  ELSE     
+    VOZILO_L := 1;
+    insert into vozilobrojac (id_mastera, id_pumpe, broj) values (id_master_p, id_pumpe_p, vozilo_l);
+  END IF;
+    
+  INSERT INTO TRANSAKCIJA (ID_MASTERA, ID_PUMPE, VOZILO, VRIJEME, AKCIJA)
+    VALUES (ID_MASTER_P, ID_PUMPE_P, VOZILO_L, VRIJEME_L, 0);
+  
   open c_red;
   fetch c_red into current_queue_l;
   
@@ -148,29 +167,38 @@ begin
     insert into redpumpe (id_pumpe, queue_size, ID_MASTER)
       values (id_pumpe_p, current_queue_p, id_master_p);
   end if;
+  
   commit;
   close c_red;
+  
   exception
-  when others then
-    close c_red;
-    raise;
+    when others then
+      CLOSE C_RED;
+      raise; 
 end;
 
 PROCEDURE insertOdlazakSP (
   id_master_p in number,
   id_pumpe_p in number,
   current_queue_p out number)
-is 
-vrijeme_l date;
-current_queue_l number;
-cursor c_red
-  is
-    select queue_size from REDPUMPE
-      where ID_PUMPE = id_pumpe_p  and ID_MASTER = id_master_p for update;
-begin
-  vrijeme_l := sysdate;
-  insert into transakcija (id_mastera, id_pumpe, vrijeme, akcija)
-    values (id_master_p, id_pumpe_p, vrijeme_l, 2);
+IS 
+  VRIJEME_L DATE;
+  CURRENT_QUEUE_L NUMBER;
+  vozilo_l number;
+  cursor c_red
+    is
+      SELECT QUEUE_SIZE FROM REDPUMPE
+        where ID_PUMPE = id_pumpe_p  and ID_MASTER = id_master_p for update;
+BEGIN
+  select min(vozilo) into vozilo_l from (
+    SELECT VOZILO, MAX(AKCIJA) AKCIJA FROM TRANSAKCIJA
+      WHERE ID_MASTERA = 2  AND ID_PUMPE = 2 GROUP BY VOZILO) 
+    where akcija = 1;
+  
+
+ vrijeme_l := sysdate;
+  INSERT INTO TRANSAKCIJA (ID_MASTERA, ID_PUMPE, VOZILO, VRIJEME, AKCIJA) 
+    values (id_master_p, id_pumpe_p, vozilo_l, vrijeme_l, 2);
   open c_red;
   fetch c_red into current_queue_l;
   current_queue_p := current_queue_l-1;
@@ -188,17 +216,23 @@ end;
 procedure insertKrajPunjenjaSP (
   id_master_p in number,
   id_pumpe_p in number)
-  is
-  vrijeme_l date;
-  begin
-  vrijeme_l := sysdate;
-  insert into transakcija (id_mastera, id_pumpe, vrijeme, akcija) 
-    values (id_master_p, id_pumpe_p, vrijeme_l, 1);
+is
+  VRIJEME_L DATE;
+  vozilo_l number;
+begin
+  
+  select min(vozilo) into vozilo_l from (
+    SELECT VOZILO, MAX(AKCIJA) AKCIJA FROM TRANSAKCIJA
+      WHERE ID_MASTERA = 2  AND ID_PUMPE = 2 GROUP BY VOZILO) 
+    where akcija = 0;
+  
+  VRIJEME_L := SYSDATE;
+  INSERT INTO TRANSAKCIJA (ID_MASTERA, ID_PUMPE, VOZILO, VRIJEME, AKCIJA) 
+    values (id_master_p, id_pumpe_p, vozilo_l, vrijeme_l, 1);
   commit;
   end;
 end mainpack;
 /
-
 CREATE OR REPLACE TRIGGER pumpa_bir before
   INSERT ON pumpa 
   FOR EACH ROW 
@@ -220,6 +254,13 @@ CREATE OR REPLACE TRIGGER redpumpe before
     :new.id := POMPACK.SEKVENCASF(:new.id);
   END;
   /
+  CREATE OR REPLACE TRIGGER VOZILOBROJAC_BIR BEFORE
+  INSERT ON vozilobrojac
+  FOR EACH ROW 
+  BEGIN 
+    :new.id := POMPACK.SEKVENCASF(:new.id);
+  END;
+  /
   create or replace TRIGGER transmaster_bir before
   INSERT ON transmaster
   FOR EACH ROW 
@@ -229,4 +270,13 @@ CREATE OR REPLACE TRIGGER redpumpe before
       :new.datum := sysdate;
     end if;
   END;
+/
+CREATE SEQUENCE  "SEQ"  
+MINVALUE 1 
+MAXVALUE 9999999999999 
+INCREMENT BY 1 
+START WITH 1
+CACHE 20 
+NOORDER  
+NOCYCLE;
 /
