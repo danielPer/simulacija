@@ -47,6 +47,15 @@ FOREIGN KEY (ID_MASTER) REFERENCES TRANSMASTER(ID);
 ALTER TABLE TRANSAKCIJA ADD CONSTRAINT TRANSAKCIJA_VOZILO_NULL_CK
 check (vozilo is not null);
 /
+CREATE SEQUENCE  "SEQ"  
+MINVALUE 1 
+MAXVALUE 9999999999999 
+INCREMENT BY 1 
+START WITH 1
+CACHE 20 
+NOORDER  
+NOCYCLE;
+/
 create or replace package pompack
 is
 function sekvencaSF (
@@ -102,26 +111,27 @@ begin
     close c_red;
     raise;
 end;
-end;
+END;
 /
-create or replace package pompack
-is
-function sekvencaSF (
-id_p number
-)RETURN NUMBER;
 
-FUNCTION VOZILOBROJAC (
-ID_MASTER_P NUMBER,
-ID_PUMPA_P NUMBER
-) return number;
+CREATE OR REPLACE PACKAGE MAINPACK
+IS
+procedure insertDolazakSP
+(id_master_p in number,
+ID_PUMPE_P IN NUMBER,
+CURRENT_QUEUE_P OUT NUMBER);
 
-PROCEDURE redpumpeSP (
-pumpa_p in number,
-id_master_p in number,
-current_queue_p out number
-);
-end pompack;
+PROCEDURE insertOdlazakSP (
+  id_master_p in number,
+  ID_PUMPE_P IN NUMBER,
+  CURRENT_QUEUE_P OUT NUMBER);
+
+procedure insertKrajPunjenjaSP (
+  ID_MASTER_P IN NUMBER,
+  ID_PUMPE_P IN NUMBER);
+END MAINPACK;
 /
+
 create or replace package body mainpack
 is
 procedure insertDolazakSP
@@ -230,7 +240,7 @@ begin
   INSERT INTO TRANSAKCIJA (ID_MASTERA, ID_PUMPE, VOZILO, VRIJEME, AKCIJA) 
     values (id_master_p, id_pumpe_p, vozilo_l, vrijeme_l, 1);
   commit;
-  end;
+  END;
 end mainpack;
 /
 CREATE OR REPLACE TRIGGER pumpa_bir before
@@ -271,12 +281,10 @@ CREATE OR REPLACE TRIGGER redpumpe before
     end if;
   END;
 /
-CREATE SEQUENCE  "SEQ"  
-MINVALUE 1 
-MAXVALUE 9999999999999 
-INCREMENT BY 1 
-START WITH 1
-CACHE 20 
-NOORDER  
-NOCYCLE;
-/
+
+
+
+
+SELECT 'drop table ' || TABLE_NAME || ' cascade constraints;' FROM USER_TABLES UNION
+SELECT 'drop package ' || OBJECT_NAME || ';' FROM USER_OBJECTS WHERE OBJECT_TYPE = 'PACKAGE' union
+select 'drop sequence ' || SEQUENCE_NAME || ';' from USER_SEQUENCES;
