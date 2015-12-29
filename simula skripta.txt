@@ -288,3 +288,24 @@ CREATE OR REPLACE TRIGGER redpumpe before
 SELECT 'drop table ' || TABLE_NAME || ' cascade constraints;' FROM USER_TABLES UNION
 SELECT 'drop package ' || OBJECT_NAME || ';' FROM USER_OBJECTS WHERE OBJECT_TYPE = 'PACKAGE' union
 select 'drop sequence ' || SEQUENCE_NAME || ';' from USER_SEQUENCES;
+
+
+select pumpa, vozilo, to_char(dolazak, 'hh:mi:ss') dolazak,
+to_char(pocetak,'hh:mi:ss') pocetak,
+to_char(kraj,'hh:mi:ss') kraj, 
+to_char(odlazak,'hh:mi:ss') odlazak,
+round(nvl((pocetak - dolazak)*86400,0),0) cekanje,
+round((kraj-pocetak)*86400,0) punjenje
+from (
+select id_pumpe pumpa, vozilo, dolazak, 
+nvl(pocetak, dolazak) pocetak, kraj, odlazak
+from (
+select id_pumpe, vozilo, dolazak, kraj, 
+odlazak, greatest(lag(odlazak) over (partition by id_pumpe order by vozilo), dolazak) pocetak
+from (
+with pivot_data as (
+  select akcija, vozilo, id_pumpe, ID_MASTERA, vrijeme from transakcija where id_mastera=60
+)
+select * from pivot_data 
+  pivot (min(vrijeme) for akcija in (0 as dolazak,1 as kraj,2 as odlazak)))));
+  
