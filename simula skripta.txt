@@ -1,311 +1,412 @@
-create table transMaster (
-id number(32) PRIMARY key,
-oznaka varchar2(32),
-datum date,
-brojpumpi number(2));
+CREATE TABLE transMaster
+  (
+    id        NUMBER(32) PRIMARY KEY,
+    oznaka    VARCHAR2(32),
+    datum     DATE,
+    brojpumpi NUMBER(2)
+  );
 /
-create table transakcija (
-id number(32) PRIMARY key,
-id_mastera number(32),
-ID_PUMPE NUMBER(32),
-vozilo number(32),
-vrijeme date,
-akcija number(1));
+CREATE TABLE transakcija
+  (
+    id         NUMBER(32) PRIMARY KEY,
+    id_mastera NUMBER(32),
+    ID_PUMPE   NUMBER(32),
+    vozilo     NUMBER(32),
+    vrijeme    DATE,
+    akcija     NUMBER(1)
+  );
 /
-CREATE TABLE vozilobrojac (
-  ID NUMBER(32) PRIMARY KEY,
-  ID_MASTERA NUMBER(32),
-  ID_PUMPE NUMBER(32),
-  broj number(32)
-);
+CREATE TABLE vozilobrojac
+  (
+    ID         NUMBER(32) PRIMARY KEY,
+    ID_MASTERA NUMBER(32),
+    ID_PUMPE   NUMBER(32),
+    broj       NUMBER(32)
+  );
 /
-create table pumpa (
-id number(32) primary key,
-naziv varchar2(32));
+CREATE TABLE pumpa
+  ( 
+    id NUMBER(32) PRIMARY KEY, 
+    naziv VARCHAR2(32)
+  );
 /
-create table redpumpe(
-id number(32) primary key,
-id_pumpe number(32),
-queue_size number(32),
-id_master number(32));
+CREATE TABLE redpumpe
+  (
+    id         NUMBER(32) PRIMARY KEY,
+    id_pumpe   NUMBER(32),
+    queue_size NUMBER(32),
+    id_master  NUMBER(32)
+  );
 /
-alter table transakcija add constraint transakcija_master_fk 
-foreign key(id_mastera) REFERENCES transMaster(id);
+ALTER TABLE transakcija ADD CONSTRAINT transakcija_master_fk FOREIGN KEY(id_mastera) REFERENCES transMaster(id);
 /
-ALTER TABLE VOZILOBROJAC ADD CONSTRAINT VOZILOBROJAC_TRANSMASTER_FK
-FOREIGN KEY (id_mastera) REFERENCES transmaster(ID);
+ALTER TABLE VOZILOBROJAC ADD CONSTRAINT VOZILOBROJAC_TRANSMASTER_FK FOREIGN KEY (id_mastera) REFERENCES transmaster(ID);
 /
-alter table transakcija add constraint transakcija_akcija_ck
-check (akcija in (0,1,2));
+ALTER TABLE transakcija ADD CONSTRAINT transakcija_akcija_ck CHECK (akcija IN (0,1,2));
 /
-alter table redpumpe add constraint redpumpe_queue_size_ck
-check (queue_size >= 0);
+ALTER TABLE redpumpe ADD CONSTRAINT redpumpe_queue_size_ck CHECK (queue_size >= 0);
 /
-alter table redpumpe add constraint redpumpe_transmaster_fk
-FOREIGN KEY (ID_MASTER) REFERENCES TRANSMASTER(ID);
+ALTER TABLE redpumpe ADD CONSTRAINT redpumpe_transmaster_fk FOREIGN KEY (ID_MASTER) REFERENCES TRANSMASTER(ID);
 /
-ALTER TABLE TRANSAKCIJA ADD CONSTRAINT TRANSAKCIJA_VOZILO_NULL_CK
-check (vozilo is not null);
+ALTER TABLE TRANSAKCIJA ADD CONSTRAINT TRANSAKCIJA_VOZILO_NULL_CK CHECK (vozilo IS NOT NULL);
 /
-CREATE SEQUENCE  "SEQ"  
-MINVALUE 1 
-MAXVALUE 9999999999999 
-INCREMENT BY 1 
-START WITH 1
-CACHE 20 
-NOORDER  
-NOCYCLE;
+CREATE SEQUENCE "SEQ" MINVALUE 1 MAXVALUE 9999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE;
 /
-create or replace package pompack
-is
-function sekvencaSF (
-id_p number
-)RETURN number;
-
-PROCEDURE redpumpeSP (
-pumpa_p in number,
-id_master_p in number,
-current_queue_p out number
-);
-end pompack;
+CREATE OR REPLACE PACKAGE pompack
+IS
+  FUNCTION sekvencaSF(
+      id_p NUMBER )
+    RETURN NUMBER;
+  PROCEDURE redpumpeSP(
+      pumpa_p     IN NUMBER,
+      id_master_p IN NUMBER,
+      current_queue_p OUT NUMBER );
+END pompack;
 /
-create or replace package body pompack
-is
-function sekvencaSF (id_p number)
-return number
-is
-id_l number;
-begin
-if id_p is not null then 
-  id_l := id_p;
-else
-  select seq.nextval into id_l from dual;
-end if;
-return id_l;
-end;
-
-PROCEDURE redpumpeSP (
-pumpa_p in number, 
-id_master_p in number, 
-current_queue_p out number) 
-is
-  current_queue_l number;
-  cursor c_red
-  is
-    select queue_size from REDPUMPE
-      where ID_PUMPE = pumpa_p  and ID_MASTER = id_master_p;
-begin
-  /*select nvl(queue_size,0) into current_queue_l from REDPUMPE 
-    where ID_PUMPE = pumpa_p and ID_MASTER = id_master_p;*/
-  open c_red;
-  fetch c_red into current_queue_l;
-  
-  if c_red%found then
+CREATE OR REPLACE PACKAGE body pompack
+IS
+FUNCTION sekvencaSF(
+    id_p NUMBER)
+  RETURN NUMBER
+IS
+  id_l NUMBER;
+BEGIN
+  IF id_p IS NOT NULL THEN
+    id_l  := id_p;
+  ELSE
+    SELECT seq.nextval INTO id_l FROM dual;
+  END IF;
+  RETURN id_l;
+END;
+PROCEDURE redpumpeSP(
+    pumpa_p     IN NUMBER,
+    id_master_p IN NUMBER,
+    current_queue_p OUT NUMBER)
+IS
+  current_queue_l NUMBER;
+  CURSOR c_red
+  IS
+    SELECT queue_size
+    FROM REDPUMPE
+    WHERE ID_PUMPE = pumpa_p
+    AND ID_MASTER  = id_master_p;
+BEGIN
+  OPEN c_red;
+  FETCH c_red INTO current_queue_l;
+  IF c_red%found THEN
     current_queue_p := current_queue_l;
-  else 
+  ELSE
     current_queue_p := 0;
-  end if;
-  close c_red;
-  exception
-  when others then
-    close c_red;
-    raise;
-end;
+  END IF;
+  CLOSE c_red;
+EXCEPTION
+WHEN OTHERS THEN
+  CLOSE c_red;
+  raise;
+END;
 END;
 /
-
 CREATE OR REPLACE PACKAGE MAINPACK
 IS
-procedure insertDolazakSP
-(id_master_p in number,
-ID_PUMPE_P IN NUMBER,
-CURRENT_QUEUE_P OUT NUMBER);
-
-PROCEDURE insertOdlazakSP (
-  id_master_p in number,
-  ID_PUMPE_P IN NUMBER,
-  CURRENT_QUEUE_P OUT NUMBER);
-
-procedure insertKrajPunjenjaSP (
-  ID_MASTER_P IN NUMBER,
-  ID_PUMPE_P IN NUMBER);
+  PROCEDURE insertDolazakSP(
+      id_master_p IN NUMBER,
+      ID_PUMPE_P  IN NUMBER,
+      CURRENT_QUEUE_P OUT NUMBER);
+  PROCEDURE insertOdlazakSP(
+      id_master_p IN NUMBER,
+      ID_PUMPE_P  IN NUMBER,
+      CURRENT_QUEUE_P OUT NUMBER);
+  PROCEDURE insertKrajPunjenjaSP(
+      ID_MASTER_P IN NUMBER,
+      ID_PUMPE_P  IN NUMBER);
 END MAINPACK;
 /
-
-create or replace package body mainpack
-is
-procedure insertDolazakSP
-(id_master_p in number,
-id_pumpe_p in number,
-current_queue_p out number)
+CREATE OR REPLACE PACKAGE body mainpack
 IS
-VRIJEME_L DATE;
-VOZILO_L NUMBER;
-v_count_l number;
-CURRENT_QUEUE_L NUMBER;
-cursor c_red
-  is
-    SELECT QUEUE_SIZE FROM REDPUMPE
-      where ID_PUMPE = id_pumpe_p and ID_MASTER = id_master_p for update;
-begin
-  VRIJEME_L := SYSDATE;
-  
-  SELECT COUNT(*) INTO V_COUNT_L FROM 
-    vozilobrojac WHERE ID_MASTERA = ID_MASTER_P AND ID_PUMPE = ID_PUMPE_P;
-    
-  IF V_COUNT_L > 0 THEN
-    SELECT broj INTO VOZILO_L
-      FROM VOZILOBROJAC WHERE ID_MASTERA = ID_MASTER_P AND ID_PUMPE = ID_PUMPE_P;
-    VOZILO_L := VOZILO_L+1;
-    update VOZILOBROJAC set broj = vozilo_l where ID_MASTERA = ID_MASTER_P AND ID_PUMPE = ID_PUMPE_P;
-  ELSE     
-    VOZILO_L := 1;
-    insert into vozilobrojac (id_mastera, id_pumpe, broj) values (id_master_p, id_pumpe_p, vozilo_l);
-  END IF;
-    
-  INSERT INTO TRANSAKCIJA (ID_MASTERA, ID_PUMPE, VOZILO, VRIJEME, AKCIJA)
-    VALUES (ID_MASTER_P, ID_PUMPE_P, VOZILO_L, VRIJEME_L, 0);
-  
-  open c_red;
-  fetch c_red into current_queue_l;
-  
-  if c_red%found then
-    current_queue_p := current_queue_l+1;
-    update redpumpe set queue_size = current_queue_p where current of c_red;
-  else 
-    current_queue_p := 1;
-    insert into redpumpe (id_pumpe, queue_size, ID_MASTER)
-      values (id_pumpe_p, current_queue_p, id_master_p);
-  end if;
-  
-  commit;
-  close c_red;
-  
-  exception
-    when others then
-      CLOSE C_RED;
-      raise; 
-end;
-
-PROCEDURE insertOdlazakSP (
-  id_master_p in number,
-  id_pumpe_p in number,
-  current_queue_p out number)
-IS 
-  VRIJEME_L DATE;
+PROCEDURE insertDolazakSP(
+    id_master_p IN NUMBER,
+    id_pumpe_p  IN NUMBER,
+    current_queue_p OUT NUMBER)
+IS
+  VRIJEME_L       DATE;
+  VOZILO_L        NUMBER;
+  v_count_l       NUMBER;
   CURRENT_QUEUE_L NUMBER;
-  vozilo_l number;
-  cursor c_red
-    is
-      SELECT QUEUE_SIZE FROM REDPUMPE
-        where ID_PUMPE = id_pumpe_p  and ID_MASTER = id_master_p for update;
+  CURSOR c_red
+  IS
+    SELECT QUEUE_SIZE
+    FROM REDPUMPE
+    WHERE ID_PUMPE = id_pumpe_p
+    AND ID_MASTER  = id_master_p FOR UPDATE;
 BEGIN
-  select min(vozilo) into vozilo_l from (
-    SELECT VOZILO, MAX(AKCIJA) AKCIJA FROM TRANSAKCIJA
-      WHERE ID_MASTERA = 2  AND ID_PUMPE = 2 GROUP BY VOZILO) 
-    where akcija = 1;
-  
-
- vrijeme_l := sysdate;
-  INSERT INTO TRANSAKCIJA (ID_MASTERA, ID_PUMPE, VOZILO, VRIJEME, AKCIJA) 
-    values (id_master_p, id_pumpe_p, vozilo_l, vrijeme_l, 2);
-  open c_red;
-  fetch c_red into current_queue_l;
-  current_queue_p := current_queue_l-1;
-  if c_red%found then
-    update redpumpe set queue_size = current_queue_p where current of c_red;
-  end if;
-  commit;
-  close c_red;
-  exception
-  when others then
-    close c_red;
-    raise;
-end;
-
-procedure insertKrajPunjenjaSP (
-  id_master_p in number,
-  id_pumpe_p in number)
-is
-  VRIJEME_L DATE;
-  vozilo_l number;
-begin
-  
-  select min(vozilo) into vozilo_l from (
-    SELECT VOZILO, MAX(AKCIJA) AKCIJA FROM TRANSAKCIJA
-      WHERE ID_MASTERA = 2  AND ID_PUMPE = 2 GROUP BY VOZILO) 
-    where akcija = 0;
-  
   VRIJEME_L := SYSDATE;
-  INSERT INTO TRANSAKCIJA (ID_MASTERA, ID_PUMPE, VOZILO, VRIJEME, AKCIJA) 
-    values (id_master_p, id_pumpe_p, vozilo_l, vrijeme_l, 1);
-  commit;
-  END;
-end mainpack;
+  SELECT COUNT(*)
+  INTO V_COUNT_L
+  FROM vozilobrojac
+  WHERE ID_MASTERA = ID_MASTER_P
+  AND ID_PUMPE     = ID_PUMPE_P;
+  IF V_COUNT_L     > 0 THEN
+    SELECT broj INTO VOZILO_L
+      FROM VOZILOBROJAC
+      WHERE ID_MASTERA = ID_MASTER_P
+        AND ID_PUMPE     = ID_PUMPE_P;
+    
+    VOZILO_L        := VOZILO_L+1;
+    
+    UPDATE VOZILOBROJAC 
+      SET broj         = vozilo_l
+      WHERE ID_MASTERA = ID_MASTER_P
+        AND ID_PUMPE     = ID_PUMPE_P;
+  ELSE
+    VOZILO_L := 1;
+    INSERT
+    INTO vozilobrojac
+      (
+        id_mastera,
+        id_pumpe,
+        broj
+      )
+      VALUES
+      (
+        id_master_p,
+        id_pumpe_p,
+        vozilo_l
+      );
+  END IF;
+  INSERT
+  INTO TRANSAKCIJA
+    (
+      ID_MASTERA,
+      ID_PUMPE,
+      VOZILO,
+      VRIJEME,
+      AKCIJA
+    )
+    VALUES
+    (
+      ID_MASTER_P,
+      ID_PUMPE_P,
+      VOZILO_L,
+      VRIJEME_L,
+      0
+    );
+  OPEN c_red;
+  FETCH c_red INTO current_queue_l;
+  IF c_red%found THEN
+    current_queue_p := current_queue_l+1;
+    UPDATE redpumpe SET queue_size = current_queue_p WHERE CURRENT OF c_red;
+  ELSE
+    current_queue_p := 1;
+    INSERT
+    INTO redpumpe
+      (
+        id_pumpe,
+        queue_size,
+        ID_MASTER
+      )
+      VALUES
+      (
+        id_pumpe_p,
+        current_queue_p,
+        id_master_p
+      );
+  END IF;
+  COMMIT;
+  CLOSE c_red;
+EXCEPTION
+WHEN OTHERS THEN
+  CLOSE C_RED;
+  raise;
+END;
+PROCEDURE insertOdlazakSP
+  (
+    id_master_p IN NUMBER,
+    id_pumpe_p  IN NUMBER,
+    current_queue_p OUT NUMBER
+  )
+IS
+  VRIJEME_L       DATE;
+  CURRENT_QUEUE_L NUMBER;
+  vozilo_l        NUMBER;
+  CURSOR c_red
+  IS
+    SELECT QUEUE_SIZE
+    FROM REDPUMPE
+    WHERE ID_PUMPE = id_pumpe_p
+    AND ID_MASTER  = id_master_p FOR UPDATE;
+BEGIN
+  SELECT MIN(vozilo)
+  INTO vozilo_l
+  FROM
+    (SELECT VOZILO,
+      MAX(AKCIJA) AKCIJA
+    FROM TRANSAKCIJA
+    WHERE ID_MASTERA = id_master_p
+    AND ID_PUMPE     = 2
+    GROUP BY VOZILO
+    )
+  WHERE akcija = 1;
+  vrijeme_l   := sysdate;
+  INSERT
+  INTO TRANSAKCIJA
+    (
+      ID_MASTERA,
+      ID_PUMPE,
+      VOZILO,
+      VRIJEME,
+      AKCIJA
+    )
+    VALUES
+    (
+      id_master_p,
+      id_pumpe_p,
+      vozilo_l,
+      vrijeme_l,
+      2
+    );
+  OPEN c_red;
+  FETCH c_red INTO current_queue_l;
+  current_queue_p := current_queue_l-1;
+  IF c_red%found THEN
+    UPDATE redpumpe SET queue_size = current_queue_p WHERE CURRENT OF c_red;
+  END IF;
+  COMMIT;
+  CLOSE c_red;
+EXCEPTION
+WHEN OTHERS THEN
+  CLOSE c_red;
+  raise;
+END;
+PROCEDURE insertKrajPunjenjaSP(
+    id_master_p IN NUMBER,
+    id_pumpe_p  IN NUMBER)
+IS
+  VRIJEME_L DATE;
+  vozilo_l  NUMBER;
+BEGIN
+  SELECT MIN(vozilo)
+  INTO vozilo_l
+  FROM
+    (SELECT VOZILO,
+      MAX(AKCIJA) AKCIJA
+    FROM TRANSAKCIJA
+    WHERE ID_MASTERA = id_master_p
+    AND ID_PUMPE     = id_pumpe_p
+    GROUP BY VOZILO
+    )
+  WHERE akcija = 0;
+  VRIJEME_L   := SYSDATE;
+  INSERT
+  INTO TRANSAKCIJA
+    (
+      ID_MASTERA,
+      ID_PUMPE,
+      VOZILO,
+      VRIJEME,
+      AKCIJA
+    )
+    VALUES
+    (
+      id_master_p,
+      id_pumpe_p,
+      vozilo_l,
+      vrijeme_l,
+      1
+    );
+  COMMIT;
+END;
+END mainpack;
 /
-CREATE OR REPLACE TRIGGER pumpa_bir before
-  INSERT ON pumpa 
-  FOR EACH ROW 
-  BEGIN 
-    :new.id := POMPACK.SEKVENCASF(:new.id);
-  END;
+CREATE OR REPLACE TRIGGER pumpa_bir 
+before INSERT ON pumpa 
+FOR EACH ROW 
+BEGIN 
+  :new.id := POMPACK.SEKVENCASF(:new.id);
+END;
 /
-CREATE OR REPLACE TRIGGER redpumpe before
-  INSERT ON redpumpe 
-  FOR EACH ROW 
-  BEGIN 
-    :new.id := POMPACK.SEKVENCASF(:new.id);
-  END;
-  /
-  CREATE OR REPLACE TRIGGER transakcija_bir before
-  INSERT ON transakcija
-  FOR EACH ROW 
-  BEGIN 
-    :new.id := POMPACK.SEKVENCASF(:new.id);
-  END;
-  /
-  CREATE OR REPLACE TRIGGER VOZILOBROJAC_BIR BEFORE
-  INSERT ON vozilobrojac
-  FOR EACH ROW 
-  BEGIN 
-    :new.id := POMPACK.SEKVENCASF(:new.id);
-  END;
-  /
-  create or replace TRIGGER transmaster_bir before
-  INSERT ON transmaster
-  FOR EACH ROW 
-  BEGIN 
-    :new.id := POMPACK.SEKVENCASF(:new.id);
-    if :new.datum is null then
-      :new.datum := sysdate;
-    end if;
-  END;
+CREATE OR REPLACE TRIGGER redpumpe 
+before INSERT ON redpumpe 
+FOR EACH ROW 
+BEGIN 
+  :new.id := POMPACK.SEKVENCASF(:new.id);
+END;
 /
+CREATE OR REPLACE TRIGGER transakcija_bir 
+before INSERT ON transakcija 
+FOR EACH ROW 
+BEGIN 
+  :new.id := POMPACK.SEKVENCASF(:new.id);
+END;
+/
+CREATE OR REPLACE TRIGGER VOZILOBROJAC_BIR 
+BEFORE INSERT ON vozilobrojac 
+FOR EACH ROW 
+BEGIN 
+  :new.id := POMPACK.SEKVENCASF(:new.id);
+END;
+/
+CREATE OR REPLACE TRIGGER transmaster_bir 
+before INSERT ON transmaster 
+FOR EACH ROW 
+BEGIN 
+  :new.id := POMPACK.SEKVENCASF(:new.id);
+  IF :new.datum IS NULL THEN
+    :new.datum  := sysdate;
+  END IF;
+END;
+/
+-- upiti
+-- drop baze
+SELECT 'drop table '
+  || TABLE_NAME
+  || ' cascade constraints;'
+FROM USER_TABLES
+UNION
+SELECT 'drop package '
+  || OBJECT_NAME
+  || ';'
+FROM USER_OBJECTS
+WHERE OBJECT_TYPE = 'PACKAGE'
+UNION
+SELECT 'drop sequence ' || SEQUENCE_NAME || ';' FROM USER_SEQUENCES;
 
-
-
-
-SELECT 'drop table ' || TABLE_NAME || ' cascade constraints;' FROM USER_TABLES UNION
-SELECT 'drop package ' || OBJECT_NAME || ';' FROM USER_OBJECTS WHERE OBJECT_TYPE = 'PACKAGE' union
-select 'drop sequence ' || SEQUENCE_NAME || ';' from USER_SEQUENCES;
-
-
-select pumpa, vozilo, to_char(dolazak, 'hh:mi:ss') dolazak,
-to_char(pocetak,'hh:mi:ss') pocetak,
-to_char(kraj,'hh:mi:ss') kraj, 
-to_char(odlazak,'hh:mi:ss') odlazak,
-round(nvl((pocetak - dolazak)*86400,0),0) cekanje,
-round((kraj-pocetak)*86400,0) punjenje
-from (
-select id_pumpe pumpa, vozilo, dolazak, 
-nvl(pocetak, dolazak) pocetak, kraj, odlazak
-from (
-select id_pumpe, vozilo, dolazak, kraj, 
-odlazak, greatest(lag(odlazak) over (partition by id_pumpe order by vozilo), dolazak) pocetak
-from (
-with pivot_data as (
-  select akcija, vozilo, id_pumpe, ID_MASTERA, vrijeme from transakcija where id_mastera=60
-)
-select * from pivot_data 
-  pivot (min(vrijeme) for akcija in (0 as dolazak,1 as kraj,2 as odlazak)))));
-  
+-- selekcija podataka
+SELECT pumpa,
+  vozilo,
+  TO_CHAR(dolazak, 'hh:mi:ss') dolazak,
+  TO_CHAR(pocetak,'hh:mi:ss') pocetak,
+  TO_CHAR(kraj,'hh:mi:ss') kraj,
+  TO_CHAR(odlazak,'hh:mi:ss') odlazak,
+  ROUND(NVL((pocetak - dolazak)*86400,0),0) cekanje,
+  ROUND((kraj        -pocetak)*86400,0) punjenje,
+  ROUND((odlazak     -kraj)*86400,0) placanje,
+  ROUND((odlazak     -dolazak)*86400,0) ukupno
+FROM
+  (SELECT id_pumpe pumpa,
+    vozilo,
+    dolazak,
+    NVL(pocetak, dolazak) pocetak,
+    kraj,
+    odlazak
+  FROM
+    (SELECT id_pumpe,
+      vozilo,
+      dolazak,
+      kraj,
+      odlazak,
+      greatest(lag(odlazak) over (partition BY id_pumpe order by vozilo), dolazak) pocetak
+    FROM
+      ( WITH pivot_data AS
+      (SELECT akcija,
+        vozilo,
+        id_pumpe,
+        ID_MASTERA,
+        vrijeme
+      FROM arhivatrans
+      WHERE id_mastera=:vMasterId
+      )
+    SELECT                                          *
+    FROM pivot_data pivot (MIN(vrijeme) FOR akcija IN (0 AS dolazak,1 AS kraj,2 AS odlazak))
+      )
+    )
+  );

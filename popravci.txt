@@ -1,0 +1,5 @@
+1. pumpa 0 vozilo 13 odlazak 17:32:34 umjesto 17:35:34
+2. pumpa 1 vozilo 10 odlazak 17:26:57 umjesto 17:27:57
+3. pumpa 2 vozilo 13 kraj 17:32:35 umjesto 17:31:35
+4. pumpa 3 vozilo 10 odlazak 17:25:57 umjesto 17:27:25
+5. pumpa 0 vozilo 1 odlazak 16:51:01 umjesto 16:50:31
